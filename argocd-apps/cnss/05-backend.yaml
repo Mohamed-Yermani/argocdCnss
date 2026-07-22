@@ -27,7 +27,7 @@ spec:
               echo "MySQL est prêt."
       containers:
         - name: cnss-backend
-          image: yermanimohamed/cnss_backend:1.0.76
+          image: yermanimohamed/cnss_backend:1.0.77
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8089
