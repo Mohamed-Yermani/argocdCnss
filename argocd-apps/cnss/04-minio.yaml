@@ -1,3 +1,4 @@
+```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -10,6 +11,7 @@ spec:
     requests:
       storage: 10Gi
   storageClassName: local-path
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -30,22 +32,38 @@ spec:
     spec:
       containers:
         - name: minio
-          image: quay.io/minio/minio:RELEASE.2024-06-29T01-20-47Z
-          args: ["server", "/data", "--console-address", ":9001"]
+          image: docker.io/minio/minio:latest
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - server
+            - /data
+            - --console-address
+            - ":9001"
+
           ports:
-            - containerPort: 9000
-            - containerPort: 9001
+            - name: api
+              containerPort: 9000
+              protocol: TCP
+
+            - name: console
+              containerPort: 9001
+              protocol: TCP
+
           env:
             - name: MINIO_ROOT_USER
               value: "admin"
+
             - name: MINIO_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: cnss-backend-secret
                   key: MINIO_SECRET_KEY
+
           volumeMounts:
             - name: minio-storage
               mountPath: /data
+
       volumes:
         - name: minio-storage
           persistentVolumeClaim:
@@ -58,12 +76,17 @@ metadata:
   name: minio-service
   namespace: cnss
 spec:
+  type: ClusterIP
   selector:
     app: minio
   ports:
     - name: api
       port: 9000
       targetPort: 9000
+      protocol: TCP
+
     - name: console
       port: 9001
       targetPort: 9001
+      protocol: TCP
+```
